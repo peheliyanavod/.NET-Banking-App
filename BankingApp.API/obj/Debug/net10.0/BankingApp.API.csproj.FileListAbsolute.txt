@@ -26,3 +26,4 @@ C:\Users\Trance Asia\Desktop\.NET-Banking-App\BankingApp.API\obj\Debug\net10.0\r
 C:\Users\Trance Asia\Desktop\.NET-Banking-App\BankingApp.API\obj\Debug\net10.0\BankingApp.API.pdb
 C:\Users\Trance Asia\Desktop\.NET-Banking-App\BankingApp.API\obj\Debug\net10.0\BankingApp.API.genruntimeconfig.cache
 C:\Users\Trance Asia\Desktop\.NET-Banking-App\BankingApp.API\obj\Debug\net10.0\ref\BankingApp.API.dll
+c:\Users\Trance Asia\Desktop\.NET-Banking-App\BankingApp.API\obj\Debug\net10.0\BankingApp.API.sourcelink.json

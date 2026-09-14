@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\BankingApp.API.csproj": {}
+    "c:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\BankingApp.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\BankingApp.API.csproj": {
+    "c:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\BankingApp.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\BankingApp.API.csproj",
+        "projectUniqueName": "c:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\BankingApp.API.csproj",
         "projectName": "BankingApp.API",
-        "projectPath": "C:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\BankingApp.API.csproj",
+        "projectPath": "c:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\BankingApp.API.csproj",
         "packagesPath": "C:\\Users\\Trance Asia\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\obj\\",
+        "outputPath": "c:\\Users\\Trance Asia\\Desktop\\.NET-Banking-App\\BankingApp.API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Trance Asia\\AppData\\Roaming\\NuGet\\NuGet.Config"
