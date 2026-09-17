@@ -4,69 +4,98 @@ namespace BankingApp.API.Endpoints;
 
 internal static class UserEndpoints
 {
-
     private static readonly List<UserDto> users = [
         new UserDto
         {
-            Id = 1,
-            FirstName = "Peheliya",
-            LastName = "Dhanuka",
+            UserId = 1,
+            Username = "peheliya",
+            PasswordHash = "Peheliya123",
             Email = "peheliya@example.com",
-            Password = "Peheliya123"
+            UserType = "CUSTOMER",
+            CustomerId = 101,
+            Status = "ACTIVE",
+            CreatedAt = DateTime.UtcNow
         },
         new UserDto
         {
-            Id = 2,
-            FirstName = "Dhanuka",
-            LastName = "Navod",
+            UserId = 2,
+            Username = "dhanuka_e",
+            PasswordHash = "Hashed_Dhanuka123",
             Email = "dhanuka@example.com",
-            Password = "Dhanuka123"
+            UserType = "EMPLOYEE",
+            EmployeeId = 201,
+            Status = "ACTIVE",
+            CreatedAt = DateTime.UtcNow
         }
     ];
 
-
     public static WebApplication MapUserEndpoints(this WebApplication app)
     {
-        
         app.MapGet("/", () => "Welcome!");
 
         app.MapGet("/users", () => users);
 
-        app.MapGet("/users/{id}", (int id) => users.Find(user => user.Id == id));
+        app.MapGet("/users/{id}", (long id) => 
+        {
+            var user = users.Find(user => user.UserId == id);
+            return user is not null ? Results.Ok(user) : Results.NotFound();
+        });
 
         app.MapPost("/users", (UserDto user) =>
         {
             var newUser = new UserDto
             {
-                Id = users.Max(u => u.Id) + 1,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                UserId = users.Count != 0 ? users.Max(u => u.UserId) + 1 : 1,
+                Username = user.Username,
+                PasswordHash = user.PasswordHash, 
                 Email = user.Email,
-                Password = user.Password
+                UserType = user.UserType,
+                CustomerId = user.CustomerId,
+                EmployeeId = user.EmployeeId,
+                Status = user.Status ?? "ACTIVE",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             users.Add(newUser);
-            return newUser;
+            return Results.Created($"/users/{newUser.UserId}", newUser);
         });
 
-        app.MapPut("users/{id}", (int id, UserDto updatedUser) =>
+        app.MapPut("/users/{id}", (long id, UserDto updatedUser) =>
         {
-            var index = users.FindIndex(user => user.Id == id);
+            var index = users.FindIndex(user => user.UserId == id);
+            
+            if (index == -1)
+            {
+                return Results.NotFound(new { message = "User not found" });
+            }
 
             users[index] = new UserDto
             {
-                Id = id,
-                FirstName = updatedUser.FirstName,
-                LastName = updatedUser.LastName,
+                UserId = id,
+                Username = updatedUser.Username,
+                PasswordHash = updatedUser.PasswordHash,
                 Email = updatedUser.Email,
-                Password = updatedUser.Password
+                UserType = updatedUser.UserType,
+                CustomerId = updatedUser.CustomerId,
+                EmployeeId = updatedUser.EmployeeId,
+                Status = updatedUser.Status,
+                LastLoginAt = updatedUser.LastLoginAt,
+                CreatedAt = users[index].CreatedAt, // Preserve original creation date
+                UpdatedAt = DateTime.UtcNow
             };
-            return users[index];
+            
+            return Results.Ok(users[index]);
         });
 
-        app.MapDelete("/users/{id}", (int id) =>
+        app.MapDelete("/users/{id}", (long id) =>
         {
-            var index = users.FindIndex(user => user.Id == id);
+            var index = users.FindIndex(user => user.UserId == id);
+            
+            if (index == -1)
+            {
+                return Results.NotFound(new { message = "User not found" });
+            }
 
             users.RemoveAt(index);
             return Results.Ok(new { message = "User deleted successfully" });

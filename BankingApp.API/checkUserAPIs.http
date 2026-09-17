@@ -8,10 +8,12 @@ POST http://localhost:5202/users
 Content-Type: application/json
 
 {
-  "firstName": "first",
-  "lastName": "last",
-  "email": "example@example.com",
-  "password": "password123"
+  "username": "new_user123",
+  "passwordHash": "SuperSecretHash123",
+  "email": "newuser@example.com",
+  "userType": "CUSTOMER",
+  "customerId": 305,
+  "status": "ACTIVE"
 }
 
 ###
@@ -19,10 +21,12 @@ PUT http://localhost:5202/users/3
 Content-Type: application/json
 
 {
-  "firstName": "firstupdated",
-  "lastName": "lastupdated",
-  "email": "example@example.com",
-  "password": "password123"
+  "username": "new_user123_updated",
+  "passwordHash": "NewSecretHash456",
+  "email": "updateduser@example.com",
+  "userType": "CUSTOMER",
+  "customerId": 305,
+  "status": "LOCKED"
 }
 
 ###
