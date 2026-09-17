@@ -5,4 +5,6 @@ var app = builder.Build();
 
 app.MapUserEndpoints();
 
+app.MapCustomerEndpoints();
+
 app.Run();

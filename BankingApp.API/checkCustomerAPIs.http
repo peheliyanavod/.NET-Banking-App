@@ -1,0 +1,41 @@
+GET http://localhost:5202/customers
+
+###
+GET http://localhost:5202/customers/1
+
+###
+POST http://localhost:5202/customers
+Content-Type: application/json
+
+{
+  "firstName": "Peheliya",
+  "lastName": "Dhanuka",
+  "nic": "200012345678",
+  "email": "peheliya@example.com",
+  "phone": "0712345678",
+  "address": "25 Galle Road, Colombo 03",
+  "branchID": "BR001",
+  "status": "ACTIVE",
+  "createdBy": "admin",
+  "createdAt": "2026-01-10"
+}
+
+###
+PUT http://localhost:5202/customers/3
+Content-Type: application/json
+
+{
+  "firstName": "Peheliya",
+  "lastName": "Dhanuka",
+  "nic": "200012345678",
+  "email": "peheliya@example.com",
+  "phone": "0712345678",
+  "address": "25 Galle Road, Colombo 03",
+  "branchID": "BR001",
+  "status": "ACTIVE",
+  "createdBy": "admin",
+  "createdAt": "2026-01-10"
+}
+
+###
+DELETE http://localhost:5202/customers/3
