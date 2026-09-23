@@ -1,0 +1,16 @@
+namespace BankingApp.API.Models;
+
+public class Customer
+{
+    public int CustomerId { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? NIC { get; set; }
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
+    public string? Address { get; set; }
+    public string? BranchID { get; set; }
+    public string? Status { get; set; }
+    public string? CreatedBy { get; set; }
+    public string? CreatedAt { get; set; }
+}

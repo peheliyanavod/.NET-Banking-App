@@ -1,74 +1,41 @@
 using BankingApp.API.Dtos;
+using BankingApp.API.Data;
+using BankingApp.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankingApp.API.Endpoints;
 
 internal static class CustomerEndpoints
 {
-
-    private static readonly List<CustomerDto> customers =
-    [
-        new CustomerDto
-        {
-            CustomerId = 1,
-            FirstName = "Peheliya",
-            LastName = "Dhanuka",
-            NIC = "200012345678",
-            Email = "peheliya@example.com",
-            Phone = "0712345678",
-            Address = "25 Galle Road, Colombo 03",
-            BranchID = "BR001",
-            Status = "ACTIVE",
-            CreatedBy = "admin",
-            CreatedAt = "2026-01-10"
-        },
-        new CustomerDto
-        {
-            CustomerId = 2,
-            FirstName = "Kasun",
-            LastName = "Perera",
-            NIC = "199512345678",
-            Email = "kasun.perera@example.com",
-            Phone = "0773456789",
-            Address = "45 Kandy Road, Kadawatha",
-            BranchID = "BR002",
-            Status = "ACTIVE",
-            CreatedBy = "admin",
-            CreatedAt = "2026-01-12"
-        },
-        new CustomerDto
-        {
-            CustomerId = 3,
-            FirstName = "Nimali",
-            LastName = "Fernando",
-            NIC = "199845612378",
-            Email = "nimali.fernando@example.com",
-            Phone = "0764567890",
-            Address = "18 Temple Road, Kandy",
-            BranchID = "BR003",
-            Status = "ACTIVE",
-            CreatedBy = "employee01",
-            CreatedAt = "2026-01-15"
-        }
-    ];
-
-
-
     public static WebApplication MapCustomerEndpoints(this WebApplication app)
     {
-        app.MapGet("/customers", () => customers);
-        
-        app.MapGet("/customers/{id}", (int id) =>
+        app.MapGet("/customers", async (BankingAppContext db) =>
         {
-            var customer = customers.Find(customer => customer.CustomerId == id);
-
-            return customer;
-        });
-
-        app.MapPost("/customers", (CustomerDto customer) =>
-        {
-            CustomerDto newCustomer = new CustomerDto
+            var customers = await db.Customers.Select(c => new CustomerDto
             {
-                CustomerId = customers.Max(u => u.CustomerId) + 1,
+                CustomerId = c.CustomerId,
+                FirstName = c.FirstName,
+                LastName = c.LastName,
+                NIC = c.NIC,
+                Email = c.Email,
+                Phone = c.Phone,
+                Address = c.Address,
+                BranchID = c.BranchID,
+                Status = c.Status,
+                CreatedBy = c.CreatedBy,
+                CreatedAt = c.CreatedAt
+            }).ToListAsync();
+            return Results.Ok(customers);
+        });
+        
+        app.MapGet("/customers/{id}", async (int id, BankingAppContext db) =>
+        {
+            var customer = await db.Customers.FindAsync(id);
+            if (customer is null) return Results.NotFound();
+
+            var customerDto = new CustomerDto
+            {
+                CustomerId = customer.CustomerId,
                 FirstName = customer.FirstName,
                 LastName = customer.LastName,
                 NIC = customer.NIC,
@@ -81,43 +48,74 @@ internal static class CustomerEndpoints
                 CreatedAt = customer.CreatedAt
             };
 
-            customers.Add(newCustomer);
-
-            return newCustomer;
+            return Results.Ok(customerDto);
         });
 
-        app.MapPut("/customers/{id}", (int id, CustomerDto updatedCustomer) =>
+        app.MapPost("/customers", async (CustomerDto customerDto, BankingAppContext db) =>
         {
-            var index = customers.FindIndex(customer => customer.CustomerId == id);
-
-            customers[index] = new CustomerDto{
-                CustomerId = id,
-                FirstName = updatedCustomer.FirstName,
-                LastName = updatedCustomer.LastName,
-                NIC = updatedCustomer.NIC,
-                Email = updatedCustomer.Email,
-                Phone = updatedCustomer.Phone,
-                Address = updatedCustomer.Address,
-                BranchID = updatedCustomer.BranchID,
-                Status = updatedCustomer.Status,
-                CreatedBy = updatedCustomer.CreatedBy,
-                CreatedAt = updatedCustomer.CreatedAt
+            var customer = new Customer
+            {
+                FirstName = customerDto.FirstName,
+                LastName = customerDto.LastName,
+                NIC = customerDto.NIC,
+                Email = customerDto.Email,
+                Phone = customerDto.Phone,
+                Address = customerDto.Address,
+                BranchID = customerDto.BranchID,
+                Status = customerDto.Status,
+                CreatedBy = customerDto.CreatedBy,
+                CreatedAt = customerDto.CreatedAt ?? DateTime.UtcNow.ToString("yyyy-MM-dd")
             };
 
-            return customers[index];
+            db.Customers.Add(customer);
+            await db.SaveChangesAsync();
+
+            customerDto.CustomerId = customer.CustomerId;
+            customerDto.CreatedAt = customer.CreatedAt;
+
+            return Results.Created($"/customers/{customer.CustomerId}", customerDto);
         });
 
-        app.MapDelete("customers/{id}", (int id) =>
+        app.MapPut("/customers/{id}", async (int id, CustomerDto updatedCustomer, BankingAppContext db) =>
         {
-            var index = customers.FindIndex(customer => customer.CustomerId == id);
+            var customer = await db.Customers.FindAsync(id);
+            if (customer is null)
+            {
+                return Results.NotFound(new { message = "Customer not found" });
+            }
 
-            customers.RemoveAt(index);
+            customer.FirstName = updatedCustomer.FirstName;
+            customer.LastName = updatedCustomer.LastName;
+            customer.NIC = updatedCustomer.NIC;
+            customer.Email = updatedCustomer.Email;
+            customer.Phone = updatedCustomer.Phone;
+            customer.Address = updatedCustomer.Address;
+            customer.BranchID = updatedCustomer.BranchID;
+            customer.Status = updatedCustomer.Status;
+            
+            await db.SaveChangesAsync();
+
+            updatedCustomer.CustomerId = customer.CustomerId;
+            updatedCustomer.CreatedBy = customer.CreatedBy;
+            updatedCustomer.CreatedAt = customer.CreatedAt;
+
+            return Results.Ok(updatedCustomer);
+        });
+
+        app.MapDelete("customers/{id}", async (int id, BankingAppContext db) =>
+        {
+            var customer = await db.Customers.FindAsync(id);
+            if (customer is null)
+            {
+                return Results.NotFound(new { message = "Customer not found" });
+            }
+
+            db.Customers.Remove(customer);
+            await db.SaveChangesAsync();
 
             return Results.Ok(new {message = "Customer (CustomerID: " + id + ") Deleted successfully!"});
         });
         
-
         return app;
     }
-    
 }

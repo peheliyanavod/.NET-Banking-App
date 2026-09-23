@@ -1,107 +1,125 @@
 using BankingApp.API.Dtos;
+using BankingApp.API.Data;
+using BankingApp.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankingApp.API.Endpoints;
 
 internal static class UserEndpoints
 {
-    private static readonly List<UserDto> users = [
-        new UserDto
-        {
-            UserId = 1,
-            Username = "peheliya",
-            PasswordHash = "Peheliya123",
-            Email = "peheliya@example.com",
-            UserType = "CUSTOMER",
-            CustomerId = 101,
-            Status = "ACTIVE",
-            CreatedAt = DateTime.UtcNow
-        },
-        new UserDto
-        {
-            UserId = 2,
-            Username = "dhanuka_e",
-            PasswordHash = "Hashed_Dhanuka123",
-            Email = "dhanuka@example.com",
-            UserType = "EMPLOYEE",
-            EmployeeId = 201,
-            Status = "ACTIVE",
-            CreatedAt = DateTime.UtcNow
-        }
-    ];
-
     public static WebApplication MapUserEndpoints(this WebApplication app)
     {
         app.MapGet("/", () => "Welcome!");
 
-        app.MapGet("/users", () => users);
-
-        app.MapGet("/users/{id}", (long id) => 
+        app.MapGet("/users", async (BankingAppContext db) => 
         {
-            var user = users.Find(user => user.UserId == id);
-            return user is not null ? Results.Ok(user) : Results.NotFound();
+            var users = await db.Users.Select(u => new UserDto
+            {
+                UserId = u.UserId,
+                Username = u.Username,
+                PasswordHash = u.PasswordHash,
+                Email = u.Email,
+                UserType = u.UserType,
+                CustomerId = u.CustomerId,
+                EmployeeId = u.EmployeeId,
+                Status = u.Status,
+                LastLoginAt = u.LastLoginAt,
+                CreatedAt = u.CreatedAt,
+                UpdatedAt = u.UpdatedAt
+            }).ToListAsync();
+            return Results.Ok(users);
         });
 
-        app.MapPost("/users", (UserDto user) =>
+        app.MapGet("/users/{id}", async (long id, BankingAppContext db) => 
         {
-            var newUser = new UserDto
+            var user = await db.Users.FindAsync(id);
+            if (user is null) return Results.NotFound();
+
+            var userDto = new UserDto
             {
-                UserId = users.Count != 0 ? users.Max(u => u.UserId) + 1 : 1,
+                UserId = user.UserId,
                 Username = user.Username,
-                PasswordHash = user.PasswordHash, 
+                PasswordHash = user.PasswordHash,
                 Email = user.Email,
                 UserType = user.UserType,
                 CustomerId = user.CustomerId,
                 EmployeeId = user.EmployeeId,
-                Status = user.Status ?? "ACTIVE",
+                Status = user.Status,
+                LastLoginAt = user.LastLoginAt,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt
+            };
+
+            return Results.Ok(userDto);
+        });
+
+        app.MapPost("/users", async (UserDto userDto, BankingAppContext db) =>
+        {
+            var user = new User
+            {
+                Username = userDto.Username,
+                PasswordHash = userDto.PasswordHash, 
+                Email = userDto.Email,
+                UserType = userDto.UserType,
+                CustomerId = userDto.CustomerId,
+                EmployeeId = userDto.EmployeeId,
+                Status = userDto.Status ?? "ACTIVE",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            users.Add(newUser);
-            return Results.Created($"/users/{newUser.UserId}", newUser);
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+
+            userDto.UserId = user.UserId;
+            userDto.CreatedAt = user.CreatedAt;
+            userDto.UpdatedAt = user.UpdatedAt;
+            userDto.Status = user.Status;
+
+            return Results.Created($"/users/{user.UserId}", userDto);
         });
 
-        app.MapPut("/users/{id}", (long id, UserDto updatedUser) =>
+        app.MapPut("/users/{id}", async (long id, UserDto updatedUser, BankingAppContext db) =>
         {
-            var index = users.FindIndex(user => user.UserId == id);
-            
-            if (index == -1)
+            var user = await db.Users.FindAsync(id);
+            if (user is null)
             {
                 return Results.NotFound(new { message = "User not found" });
             }
 
-            users[index] = new UserDto
-            {
-                UserId = id,
-                Username = updatedUser.Username,
-                PasswordHash = updatedUser.PasswordHash,
-                Email = updatedUser.Email,
-                UserType = updatedUser.UserType,
-                CustomerId = updatedUser.CustomerId,
-                EmployeeId = updatedUser.EmployeeId,
-                Status = updatedUser.Status,
-                LastLoginAt = updatedUser.LastLoginAt,
-                CreatedAt = users[index].CreatedAt, // Preserve original creation date
-                UpdatedAt = DateTime.UtcNow
-            };
+            user.Username = updatedUser.Username;
+            user.PasswordHash = updatedUser.PasswordHash;
+            user.Email = updatedUser.Email;
+            user.UserType = updatedUser.UserType;
+            user.CustomerId = updatedUser.CustomerId;
+            user.EmployeeId = updatedUser.EmployeeId;
+            user.Status = updatedUser.Status;
+            user.LastLoginAt = updatedUser.LastLoginAt;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await db.SaveChangesAsync();
+
+            updatedUser.UserId = user.UserId;
+            updatedUser.CreatedAt = user.CreatedAt;
+            updatedUser.UpdatedAt = user.UpdatedAt;
             
-            return Results.Ok(users[index]);
+            return Results.Ok(updatedUser);
         });
 
-        app.MapDelete("/users/{id}", (long id) =>
+        app.MapDelete("/users/{id}", async (long id, BankingAppContext db) =>
         {
-            var index = users.FindIndex(user => user.UserId == id);
-            
-            if (index == -1)
+            var user = await db.Users.FindAsync(id);
+            if (user is null)
             {
                 return Results.NotFound(new { message = "User not found" });
             }
 
-            users.RemoveAt(index);
+            db.Users.Remove(user);
+            await db.SaveChangesAsync();
+
             return Results.Ok(new { message = "User deleted successfully" });
         });
 
         return app;
     }
-    
 }
