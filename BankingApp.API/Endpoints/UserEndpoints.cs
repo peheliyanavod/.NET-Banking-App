@@ -120,6 +120,73 @@ internal static class UserEndpoints
             return Results.Ok(new { message = "User deleted successfully" });
         });
 
+        app.MapPost("/users/login", async (UserDto loginDto, BankingAppContext db) =>
+        {
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Username == loginDto.Username && u.PasswordHash == loginDto.PasswordHash);
+            if (user is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            user.LastLoginAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+
+            var userDto = new UserDto
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                UserType = user.UserType,
+                CustomerId = user.CustomerId,
+                EmployeeId = user.EmployeeId,
+                Status = user.Status,
+                LastLoginAt = user.LastLoginAt,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt
+            };
+
+            return Results.Ok(userDto);
+        });
+
+        app.MapPost("/users/register", async (UserDto registerDto, BankingAppContext db) =>
+        {
+            if (await db.Users.AnyAsync(u => u.Username == registerDto.Username))
+            {
+                return Results.BadRequest(new { message = "Username already exists" });
+            }
+
+            var user = new User
+            {
+                Username = registerDto.Username,
+                PasswordHash = registerDto.PasswordHash, 
+                Email = registerDto.Email,
+                UserType = registerDto.UserType,
+                CustomerId = registerDto.CustomerId,
+                EmployeeId = registerDto.EmployeeId,
+                Status = registerDto.Status ?? "ACTIVE",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+
+            var userDto = new UserDto
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                UserType = user.UserType,
+                CustomerId = user.CustomerId,
+                EmployeeId = user.EmployeeId,
+                Status = user.Status,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt
+            };
+
+            return Results.Created($"/users/{user.UserId}", userDto);
+        });
+
         return app;
     }
 }
