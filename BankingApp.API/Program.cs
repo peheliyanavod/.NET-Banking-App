@@ -27,8 +27,11 @@ var app = builder.Build();
 app.UseCors();
 
 app.MapUserEndpoints();
-
 app.MapCustomerEndpoints();
+app.MapAccountEndpoints();
+app.MapBranchEndpoints();
+app.MapEmployeeEndpoints();
+app.MapTransactionEndpoints();
 
 app.Run();
 
