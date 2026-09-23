@@ -168,6 +168,37 @@ internal static class UserEndpoints
                 UpdatedAt = DateTime.UtcNow
             };
 
+            if (user.UserType == "CUSTOMER")
+            {
+                var customer = new Customer
+                {
+                    FirstName = user.Username,
+                    LastName = "User",
+                    Email = user.Email,
+                    Status = "ACTIVE",
+                    CreatedAt = DateTime.UtcNow.ToString("o")
+                };
+                db.Customers.Add(customer);
+                await db.SaveChangesAsync();
+
+                var account = new Account
+                {
+                    AccountNumber = "ACC" + new Random().Next(100000, 999999).ToString(),
+                    CustomerId = customer.CustomerId,
+                    AccountTypeId = 1,
+                    BranchId = 1,
+                    Balance = 1000.00m,
+                    Currency = "USD",
+                    Status = "ACTIVE",
+                    OpenedDate = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                db.Accounts.Add(account);
+                
+                user.CustomerId = customer.CustomerId;
+            }
+
             db.Users.Add(user);
             await db.SaveChangesAsync();
 

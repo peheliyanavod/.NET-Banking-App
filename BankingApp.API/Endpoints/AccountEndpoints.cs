@@ -13,6 +13,14 @@ internal static class AccountEndpoints
             return Results.Ok(accounts);
         });
 
+        app.MapGet("/accounts/customer/{customerId}", async (long customerId, BankingAppContext db) =>
+        {
+            var accounts = await db.Accounts
+                .Where(a => a.CustomerId == customerId)
+                .ToListAsync();
+            return Results.Ok(accounts);
+        });
+
         return app;
     }
 }
